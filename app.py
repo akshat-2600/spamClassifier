@@ -13,6 +13,14 @@ nltk.download('stopwords')
 
 ps = PorterStemmer()
 
+tfidf = None
+model = None
+
+def load_artifacts():
+    global tfidf, model
+    tfidf = pickle.load(open("vectorizer.pkl", 'rb'))
+    model = pickle.load(open("model.pkl", 'rb'))
+
 def transform_text(text):
     text = text.lower()
     text = nltk.word_tokenize(text)
@@ -42,6 +50,9 @@ def transform_text(text):
 
 
 def predict_spam(message):
+    # Check if model and vectorizer are loaded
+    if tfidf is None or model is None:
+        load_artifacts()
     
     #Preprocess the message
     transformed_sms = transform_text(message)
@@ -58,7 +69,6 @@ def predict_spam(message):
 @app.route("/") #home page
 def home():
     return render_template('index.html')
-
 
 
 
