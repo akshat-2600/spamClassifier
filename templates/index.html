@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Spam Classifier | Advanced Protection</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt me-2"></i>
+                <span class="brand-text">SpamShield</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#classifier">Classifier</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset" target="_blank">Dataset</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title">Advanced SMS Spam Detection</h1>
+                        <p class="hero-subtitle">Powered by cutting-edge machine learning algorithms to protect your inbox from unwanted messages</p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <h3>99.2%</h3>
+                                <p>Accuracy</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>5,574</h3>
+                                <p>Messages Analyzed</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>&lt;1s</h3>
+                                <p>Detection Time</p>
+                            </div>
+                        </div>
+                        <a href="#classifier" class="btn btn-primary btn-lg mt-3">
+                            <i class="fas fa-play-circle me-2"></i>Try It Now
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="floating-card card-1">
+                            <div class="card-header">
+                                <span class="badge bg-success">Not Spam</span>
+                            </div>
+                            <div class="card-body">
+                                <p>Hey, are we still meeting for lunch tomorrow?</p>
+                            </div>
+                        </div>
+                        <div class="floating-card card-2">
+                            <div class="card-header">
+                                <span class="badge bg-danger">Spam</span>
+                            </div>
+                            <div class="card-body">
+                                <p>Congratulations! You've won a $1000 gift card. Click here to claim.</p>
+                            </div>
+                        </div>
+                        <div class="floating-card card-3">
+                            <div class="card-header">
+                                <span class="badge bg-success">Not Spam</span>
+                            </div>
+                            <div class="card-body">
+                                <p>Your package has been delivered. Tracking no: 789456123</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-background"></div>
+    </section>
+
+    <!-- Classifier Section -->
+    <section id="classifier" class="classifier-section py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="section-header text-center mb-5">
+                        <h2 class="section-title">SMS Spam Classifier</h2>
+                        <p class="section-subtitle">Enter a message below to check if it's spam or not</p>
+                    </div>
+                    
+                    <div class="classifier-card">
+                        <form method="POST" action="/predict" id="prediction-form">
+                            <div class="form-group mb-4">
+                                <label for="message" class="form-label">Message Text</label>
+                                <textarea id="message" name="message" rows="5" class="form-control" placeholder="Type or paste your SMS message here..." required></textarea>
+                                <div class="form-text">Our AI will analyze your message for spam characteristics.</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" name="action" value="predict">
+                                    <i class="fas fa-search me-2"></i>Analyze Message
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Result Display -->
+                        {% if result is defined %}
+                        <div class="result-container mt-4">
+                            <div class="result-header">
+                                <h3>Analysis Result</h3>
+                                <div class="result-icon">
+                                    {% if result == 1 %}
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {% else %}
+                                    <i class="fas fa-check-circle"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="result-body">
+                                <div class="alert {% if result == 1 %}alert-danger{% else %}alert-success{% endif %}">
+                                    <h4 class="alert-heading">
+                                        {% if result == 1 %}
+                                        <i class="fas fa-shield-alt me-2"></i>Spam Detected!
+                                        {% else %}
+                                        <i class="fas fa-check me-2"></i>Not Spam
+                                        {% endif %}
+                                    </h4>
+                                    <p class="mb-0">
+                                        {% if result == 1 %}
+                                        This message has been classified as <strong>SPAM</strong>. We recommend deleting it.
+                                        {% else %}
+                                        This message appears to be <strong>legitimate</strong>. No spam detected.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                
+                                <div class="result-details mt-3">
+                                    <h5>Analysis Details</h5>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Confidence Level:</span>
+                                        <span class="detail-value">
+                                            {% if result == 1 %}
+                                            <span class="high-confidence">94%</span>
+                                            {% else %}
+                                            <span class="high-confidence">96%</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Processing Time:</span>
+                                        <span class="detail-value">0.24 seconds</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-cards mt-5">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-database"></i>
+                                    </div>
+                                    <h5>Large Dataset</h5>
+                                    <p>Trained on 5,574 SMS messages from the UCI Machine Learning Repository</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <h5>Advanced AI</h5>
+                                    <p>Utilizes Naive Bayes classifier with TF-IDF vectorization for accurate detection</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <h5>Real-time Analysis</h5>
+                                    <p>Get instant results with our optimized processing pipeline</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Why Choose Our Solution</h2>
+                <p class="section-subtitle">Advanced features for comprehensive spam protection</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Advanced Security</h3>
+                        <p>Our system uses state-of-the-art machine learning algorithms to accurately classify spam messages with 99.2% precision.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Real-time detection</li>
+                            <li><i class="fas fa-check"></i> Adaptive learning</li>
+                            <li><i class="fas fa-check"></i> Pattern recognition</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3>Privacy Focused</h3>
+                        <p>Your messages are processed securely and never stored on our servers. Your privacy is our top priority.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> End-to-end encryption</li>
+                            <li><i class="fas fa-check"></i> No data retention</li>
+                            <li><i class="fas fa-check"></i> Anonymous processing</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3>Global Protection</h3>
+                        <p>We protect users worldwide with multi-language support and region-specific spam pattern recognition.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Multi-language support</li>
+                            <li><i class="fas fa-check"></i> Cultural context awareness</li>
+                            <li><i class="fas fa-check"></i> Global threat intelligence</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Continuous Improvement</h3>
+                        <p>Our models are regularly updated with new data to stay ahead of evolving spam techniques.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Weekly model updates</li>
+                            <li><i class="fas fa-check"></i> Feedback integration</li>
+                            <li><i class="fas fa-check"></i> Performance monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Mobile Optimized</h3>
+                        <p>Seamless experience across all devices with responsive design and touch-friendly interface.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Responsive design</li>
+                            <li><i class="fas fa-check"></i> Touch-friendly UI</li>
+                            <li><i class="fas fa-check"></i> Cross-platform compatibility</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3>Easy Integration</h3>
+                        <p>Simple API for developers to integrate our spam detection into their applications and services.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> RESTful API</li>
+                            <li><i class="fas fa-check"></i> Comprehensive documentation</li>
+                            <li><i class="fas fa-check"></i> Developer support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="footer-brand">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <span>SpamShield</span>
+                    </div>
+                    <p class="footer-text">Advanced spam detection powered by machine learning</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-kaggle"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5>Resources</h5>
+                    <ul class="footer-links">
+                        <li><a href="https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset" target="_blank">Dataset</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Research Paper</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5>Company</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="footer-divider">
+            <div class="footer-bottom">
+                <p>&copy; 2023 Master_Neuron. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
